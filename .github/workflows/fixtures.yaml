@@ -3,7 +3,7 @@ name: Build and Package Fixtures
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+*"
+      - "tests-v[0-9]+.[0-9]+.[0-9]+*"
   workflow_dispatch:
 
 jobs:
@@ -27,6 +27,7 @@ jobs:
             echo "$feature"
           done | jq -R . | jq -cs . > features.json
           echo "features=$(cat features.json)" >> "$GITHUB_OUTPUT"
+
   build:
     needs: features
     runs-on: [self-hosted-ghr, size-gigachungus-x64]
@@ -61,21 +62,28 @@ jobs:
           release_name: ${{ matrix.name }}
           uv_version: ${{ vars.UV_VERSION }}
           python_version: ${{ vars.DEFAULT_PYTHON_VERSION }}
+
   release:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/tests-')
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e
-        with:
-          path: .
-      - name: Draft Release
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
-        with:
-          repository: ethereum/execution-spec-tests
-          token: ${{ secrets.EEST_RELEASE_TOKEN }}
-          files: "./**"
-          draft: true
-          generate_release_notes: true
-          fail_on_unmatched_files: true
+      - name: Download all artifacts
+        run: |
+          gh run download ${{ github.run_id }} --dir ./artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          
+      - name: Create Release
+        run: |
+          # Strip "tests-" prefix from tag for EEST
+          TAG_NAME="${{ github.ref_name }}"
+          RELEASE_TAG="${TAG_NAME#tests-}"
+            
+          gh release create "$RELEASE_TAG" \
+            --repo ethereum/execution-spec-tests \
+            --draft \
+            --generate-notes \
+            ./artifacts/**/*
+        env:
+          GH_TOKEN: ${{ secrets.EEST_RELEASE_TOKEN }}
