@@ -26,3 +26,9 @@ bal:
   evm-type: develop
   fill-params: --fork=Amsterdam ./tests/amsterdam/eip7928_block_level_access_lists
   feature_only: true
+
+# TODO: remove test release
+weld:
+  evm-type: develop
+  fill-params: --fork=Prague -k acl -m blockchain_test
+  feature_only: true
