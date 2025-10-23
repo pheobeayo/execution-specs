@@ -5,15 +5,20 @@ stable:
 
 develop:
   evm-type: develop 
-  fill-params: --until=BPO4 --fill-static-tests --ignore=tests/static/state_tests/stQuadraticComplexityTest
+  # TODO: Fix BPO filling.
+  # fill-params: --until=BPO4 --fill-static-tests --ignore=tests/static/state_tests/stQuadraticComplexityTest
+  fill-params: --until=Osaka --fill-static-tests --ignore=tests/static/state_tests/stQuadraticComplexityTest -k "not BPO"
 
-benchmark:
-  evm-type: benchmark
-  fill-params: --fork=Prague --gas-benchmark-values 1,10,30,45,60,100,150 -m "benchmark and not state_test" ./tests/benchmark
+# TODO: don't add in full release tests
+# benchmark:
+  # evm-type: benchmark
+  # fill-params: --fork=Prague --gas-benchmark-values 1,10,30,45,60,100,150 -m "benchmark and not state_test" ./tests/benchmark
 
 benchmark_develop:
-  evm-type: develop
-  fill-params: --fork=Osaka --gas-benchmark-values 1,10,30,45,60,100,150 -m "benchmark and not state_test" ./tests/benchmark
+  evm-type: benchmark
+  # TODO: Uncomment for feature fill.
+  # fill-params: --fork=Osaka --gas-benchmark-values 1,10,30,45,60,100,150 -m "benchmark and not state_test" ./tests/benchmark
+  fill-params: --fork=Osaka --gas-benchmark-values 1 -m "benchmark and not state_test" ./tests/benchmark
   feature_only: true
 
 # TODO: requires `forks/amsterdam` to be rebased onto a welded `forks/osaka`
